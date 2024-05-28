@@ -76,36 +76,132 @@ let f_resize = ()=>{
 
 }
 window.addEventListener('resize',()=>{
-    f_resize()
+    f_resize();
+    f_render_canvas();
 });
 f_resize()
 
 let n_id_raf = 0;
+class O_line{
+    constructor(
+        s_text, 
+        a_v_o_char_img, 
+        n_scl_x_char_max, 
+    ){
+        this.s_text = s_text
+        this.a_v_o_char_img = a_v_o_char_img
+        this.n_scl_x_char_max = n_scl_x_char_max
+    }
+}
+let a_o_line = [];
 let f_render_canvas = function(){
     o_ctx.clearRect(0, 0, o_canvas.width, o_canvas.height);
-    let n_x = 0;
-    let n_scl_x_char = o_canvas.width / (o_state.s_text.split("").length);
-    console.log(n_scl_x_char)
-    let a_o_img = o_state.s_text.split("").map(s=>{
-        let a_o = o_state.o_s_char_a_o_img[s];
-        let a_o_lower = o_state.o_s_char_a_o_img[s.toLowerCase()];
-        let a_o_upper = o_state.o_s_char_a_o_img[s.toUpperCase()];
-        a_o = (a_o) 
-            ? a_o 
-            : (a_o_lower) 
-            ? a_o_lower
-            : (a_o_upper)
-            ? a_o_upper 
-            : []
+    
+    let a_o_line = o_state.s_text.split('\n').map(s_line=>{
 
-        let n_len = a_o.length;
-        let o = a_o?.[parseInt(Math.random()*n_len)];
-        let n_width = n_scl_x_char;
-        if(o){
-            o_ctx.drawImage(o.o_img, n_x, 0, n_scl_x_char, n_scl_x_char*(o.o_img.height/o.o_img.width));
-        }
-        n_x += n_width;
+        let a_s_char = s_line.split("")
+        let n_scl_x_char_max = o_canvas.width / (a_s_char.length);
+        let a_v_o_char_img = a_s_char.map(s_char=>{
+
+            let a_o = o_state.o_s_char_a_o_img[s_char];
+            let a_o_lower = o_state.o_s_char_a_o_img[s_char.toLowerCase()];
+            let a_o_upper = o_state.o_s_char_a_o_img[s_char.toUpperCase()];
+            a_o = (a_o) 
+                ? a_o 
+                : (a_o_lower) 
+                ? a_o_lower
+                : (a_o_upper)
+                ? a_o_upper 
+                : []
+    
+    
+            let n_len = a_o.length;
+            let o = a_o?.[parseInt(Math.random()*n_len)];
+            return o
+            // let n_width = n_scl_x_char_max;
+    
+            // if(s == '\n'){
+            //     n_trn_y += n_scl_y_max;
+            // }
+            // if(o){
+            //     if(o.o_img.height > n_scl_y_max){
+            //         n_scl_y_max = o.o_img.height;
+            //     }
+            //     o_ctx.drawImage(o.o_img, n_x, n_trn_y, n_scl_x_char, n_scl_x_char*(o.o_img.height/o.o_img.width));
+            // }
+            // n_x += n_width;
+
+        });
+        return new O_line(
+            s_line, 
+            a_v_o_char_img,
+            n_scl_x_char_max
+        )
     });
+    let n_scl_y_char_max = o_canvas.height / (a_o_line.length);
+    let n_trn_y = 0;
+    let n_trn_x_max_char = 0;
+    let a_o_char_on_canvas = []
+    for(let o_line of a_o_line){
+        let n_trn_x = 0;
+        let n_scl_x = o_line.n_scl_x_char_max;
+        for(let v_o_char_img of o_line.a_v_o_char_img){
+            if(v_o_char_img){
+                // console.log(v_o_char_img)
+                let n_scl_x1 = o_line.n_scl_x_char_max;
+                let n_scl_y1 = o_line.n_scl_x_char_max*(v_o_char_img.o_img.height/v_o_char_img.o_img.width);
+
+                let n_scl_x2 = n_scl_y_char_max*(v_o_char_img.o_img.width/v_o_char_img.o_img.height);
+                let n_scl_y2 = n_scl_y_char_max;
+
+                n_scl_x = n_scl_x1; 
+                let n_scl_y = n_scl_y1;
+                if(n_scl_x2 < n_scl_x1){
+                    n_scl_x = n_scl_x2; 
+                    n_scl_y = n_scl_y2;   
+                } 
+
+                a_o_char_on_canvas.push(
+                    new O_char_on_canvas(
+                        v_o_char_img, 
+                        n_trn_x,
+                        n_trn_y,
+                        n_scl_x,
+                        n_scl_y
+                    )
+                )
+                let n_x_tmp = n_trn_x+n_scl_x;
+                if(n_x_tmp > n_trn_x_max_char){
+                    n_trn_x_max_char = n_x_tmp; 
+                }
+                // console.log(o_line)
+            }
+            n_trn_x +=n_scl_x;
+        }
+
+        n_trn_y += n_scl_y_char_max;
+    }
+
+    let n_trn_x = (o_canvas.width - n_trn_x_max_char)/2;
+
+    for(let o_char_on_canvas of a_o_char_on_canvas){
+        console.log(o_char_on_canvas)
+        o_ctx.drawImage(
+            o_char_on_canvas.o_char_img.o_img, 
+            n_trn_x+o_char_on_canvas.n_trn_x,
+            o_char_on_canvas.n_trn_y,
+            o_char_on_canvas.n_scl_x,
+            o_char_on_canvas.n_scl_y
+        );
+    }
+    console.log(a_o_line)
+
+    // let n_scl_x_max = 
+
+    // let n_trn_x = 0;
+    // let n_scl_y_max = 0;
+    // let n_trn_y = 0;
+    // let a_o_img = 
 }
 
 let f_raf = function(){ 
@@ -119,14 +215,37 @@ n_id_raf = window.requestAnimationFrame(f_raf);
 class O_char_img{
     constructor(
         s_char, 
-        o_img
+        o_img, 
     ){
         this.s_char = s_char;
-        this.o_img = o_img
+        this.o_img = o_img 
+    }
+}
+class O_char_on_canvas{
+    constructor(
+        o_char_img, 
+        n_trn_x,
+        n_trn_y,
+        n_scl_x,
+        n_scl_y,
+        ){
+        
+        this.o_char_img = o_char_img
+        this.n_trn_x = n_trn_x
+        this.n_trn_y = n_trn_y
+        this.n_scl_x = n_scl_x
+        this.n_scl_y = n_scl_y
+
     }
 }
 
 let o_state = {
+    s_text : [
+        `look`, 
+        `down`, 
+        `and`,
+        `type`,
+    ].join('\n'),
     s_char: '', 
     o_s_char_a_o_img: {},
     a_o_char_img: []
@@ -136,25 +255,55 @@ let n = 0;
 let o = await fetch("/a_s_name_file.json");
 let a_o = await o.json();
 console.log(a_o)
-for(let o of a_o){
-    let o_img = new Image();
-    let s_char = o.name[0];
-
-    o_img.onload = function(){
-        let o_char_img = new O_char_img(
-            s_char,
-            o_img
-        );
-        let a_o = o_state.o_s_char_a_o_img[s_char];
-        if(!a_o){
-            o_state.o_s_char_a_o_img[s_char] = []
-            a_o = o_state.o_s_char_a_o_img[s_char]
+let f_o_img = async function(
+    s_url
+){
+    return new Promise((f_res)=>{
+        let o_img = new Image();
+        o_img.onload = ()=>{
+            return f_res(o_img)
         }
-        a_o.push(o_char_img)
-        o_state.a_o_char_img.push(o_char_img)
-    }
-    o_img.src = `/static/${encodeURIComponent(`${o.name}`)}`
+        o_img.src = s_url;
+    })
 }
+await Promise.all(
+    a_o.map(o=>{
+        let s_char = o.name[0];
+
+        return f_o_img(`/static/${encodeURIComponent(`${o.name}`)}`).then(o_img=>{
+            let o_char_img = new O_char_img(
+                s_char,
+                o_img
+            );
+            let a_o = o_state.o_s_char_a_o_img[s_char];
+            if(!a_o){
+                o_state.o_s_char_a_o_img[s_char] = []
+                a_o = o_state.o_s_char_a_o_img[s_char]
+            }
+            a_o.push(o_char_img)
+            o_state.a_o_char_img.push(o_char_img)
+        })
+    })
+)
+// for(let o of a_o){
+//     let o_img = new Image();
+//     let s_char = o.name[0];
+
+//     o_img.onload = function(){
+//         let o_char_img = new O_char_img(
+//             s_char,
+//             o_img
+//         );
+//         let a_o = o_state.o_s_char_a_o_img[s_char];
+//         if(!a_o){
+//             o_state.o_s_char_a_o_img[s_char] = []
+//             a_o = o_state.o_s_char_a_o_img[s_char]
+//         }
+//         a_o.push(o_char_img)
+//         o_state.a_o_char_img.push(o_char_img)
+//     }
+//     o_img.src = `/static/${encodeURIComponent(`${o.name}`)}`
+// }
 
 // //readme.md:start
 document.body.appendChild(
@@ -173,7 +322,8 @@ document.body.appendChild(
                                     oninput: (o_e)=>{
                                         o_state.s_text = o_e.target.value;
                                         f_render_canvas();
-                                    }
+                                    }, 
+                                    value: o_state.s_text
                                 }
                             }
                         }
@@ -183,4 +333,5 @@ document.body.appendChild(
         }
     )
 );
+f_render_canvas();
 // //readme.md:end
