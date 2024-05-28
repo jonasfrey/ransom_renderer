@@ -62,6 +62,17 @@ f_add_css(
 );
 
 
+let  f_update_tab_favicon = function(s_url) {
+    var link = document.createElement('link');
+    var oldLink = document.querySelector('link[rel="icon"]');
+    link.rel = 'icon';
+    link.href = s_url;
+    if (oldLink) {
+        document.head.removeChild(oldLink);
+    }
+    document.head.appendChild(link);
+}
+
 let o_canvas = document.createElement('canvas');
 o_canvas.width = window.innerWidth
 o_canvas.height = window.innerHeight
@@ -185,7 +196,7 @@ let f_render_canvas = function(){
     let n_trn_x = (o_canvas.width - n_trn_x_max_char)/2;
 
     for(let o_char_on_canvas of a_o_char_on_canvas){
-        console.log(o_char_on_canvas)
+        // console.log(o_char_on_canvas)
         o_ctx.drawImage(
             o_char_on_canvas.o_char_img.o_img, 
             n_trn_x+o_char_on_canvas.n_trn_x,
@@ -194,8 +205,9 @@ let f_render_canvas = function(){
             o_char_on_canvas.n_scl_y
         );
     }
-    console.log(a_o_line)
+    // console.log(a_o_line)
 
+    f_update_tab_favicon(a_o_char_on_canvas?.[0].o_char_img.o_img.src)
     // let n_scl_x_max = 
 
     // let n_trn_x = 0;
@@ -254,7 +266,7 @@ window.o_state = o_state
 let n = 0; 
 let o = await fetch("/a_s_name_file.json");
 let a_o = await o.json();
-console.log(a_o)
+// console.log(a_o)
 let f_o_img = async function(
     s_url
 ){
