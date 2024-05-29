@@ -50,7 +50,7 @@ f_add_css(
         height:100vh;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: end;
     }
     .inputs{
         max-width: 1000px;
@@ -109,9 +109,14 @@ class O_line{
     }
 }
 let a_o_line = [];
+let s_text_last = '';
 let f_render_canvas = function(){
     o_ctx.clearRect(0, 0, o_canvas.width, o_canvas.height);
-    
+
+    // if(o_state.s_text == s_text_last){
+    //     return
+    // }
+
     let a_o_line = o_state.s_text.split('\n').map(s_line=>{
 
         let a_s_char = s_line.split("")
@@ -155,77 +160,102 @@ let f_render_canvas = function(){
     });
     let n_scl_y_char_max = o_canvas.height / (a_o_line.length);
     let n_trn_y = 0;
-    let n_trn_x_max_char = 0;
-    let a_o_char_on_canvas = []
-    for(let o_line of a_o_line){
-        let n_trn_x = 0;
-        let n_scl_x = o_line.n_scl_x_char_max;
-        for(let v_o_char_img of o_line.a_v_o_char_img){
-            if(v_o_char_img){
-                // console.log(v_o_char_img)
-                let n_scl_x1 = o_line.n_scl_x_char_max;
-                let n_scl_y1 = o_line.n_scl_x_char_max*(v_o_char_img.o_img.height/v_o_char_img.o_img.width);
+    
+    if(o_state.s_text != s_text_last){
 
-                let n_scl_x2 = n_scl_y_char_max*(v_o_char_img.o_img.width/v_o_char_img.o_img.height);
-                let n_scl_y2 = n_scl_y_char_max;
-
-                n_scl_x = n_scl_x1; 
-                let n_scl_y = n_scl_y1;
-                if(n_scl_x2 < n_scl_x1){
-                    n_scl_x = n_scl_x2; 
-                    n_scl_y = n_scl_y2;   
-                } 
-
-                a_o_char_on_canvas.push(
-                    new O_char_on_canvas(
-                        v_o_char_img, 
-                        n_trn_x,
-                        n_trn_y,
-                        n_scl_x,
-                        n_scl_y
+        o_state.a_a_o_char_on_canvas = []
+        for(let o_line of a_o_line){
+            let n_trn_x = 0;
+            let n_scl_x = o_line.n_scl_x_char_max;
+            o_state.a_a_o_char_on_canvas.push([])
+            for(let v_o_char_img of o_line.a_v_o_char_img){
+                if(v_o_char_img){
+                    // console.log(v_o_char_img)
+                    let n_scl_x1 = o_line.n_scl_x_char_max;
+                    let n_scl_y1 = o_line.n_scl_x_char_max*(v_o_char_img.o_img.height/v_o_char_img.o_img.width);
+    
+                    let n_scl_x2 = n_scl_y_char_max*(v_o_char_img.o_img.width/v_o_char_img.o_img.height);
+                    let n_scl_y2 = n_scl_y_char_max;
+    
+                    n_scl_x = n_scl_x1; 
+                    let n_scl_y = n_scl_y1;
+                    if(n_scl_x2 < n_scl_x1){
+                        n_scl_x = n_scl_x2; 
+                        n_scl_y = n_scl_y2;   
+                    } 
+    
+                    o_state.a_a_o_char_on_canvas.at(-1).push(
+                        new O_char_on_canvas(
+                            v_o_char_img, 
+                            n_trn_x,
+                            n_trn_y,
+                            n_scl_x,
+                            n_scl_y
+                        )
                     )
-                )
-                let n_x_tmp = n_trn_x+n_scl_x;
-                if(n_x_tmp > n_trn_x_max_char){
-                    n_trn_x_max_char = n_x_tmp; 
+                    let n_x_tmp = n_trn_x+n_scl_x;
+                    if(n_x_tmp > o_state.n_trn_x_max_char){
+                        o_state.n_trn_x_max_char = n_x_tmp; 
+                    }
+                    // console.log(o_line)
                 }
-                // console.log(o_line)
+                n_trn_x +=n_scl_x;
             }
-            n_trn_x +=n_scl_x;
+    
+            n_trn_y += n_scl_y_char_max;
         }
+        f_update_tab_favicon(o_state.a_a_o_char_on_canvas?.[0]?.[0]?.o_char_img?.o_img?.src)
 
-        n_trn_y += n_scl_y_char_max;
     }
 
-    let n_trn_x = (o_canvas.width - n_trn_x_max_char)/2;
-
-    for(let o_char_on_canvas of a_o_char_on_canvas){
-        // console.log(o_char_on_canvas)
-        o_ctx.drawImage(
-            o_char_on_canvas.o_char_img.o_img, 
-            n_trn_x+o_char_on_canvas.n_trn_x,
-            o_char_on_canvas.n_trn_y,
-            o_char_on_canvas.n_scl_x,
-            o_char_on_canvas.n_scl_y
-        );
+    let n_trn_x_center = (o_canvas.width - o_state.n_trn_x_max_char)/2;
+    for(let a_o_char_on_canvas of o_state.a_a_o_char_on_canvas  ){
+        for(let o_char_on_canvas of a_o_char_on_canvas){
+            let n_factor = (Math.random()-.5)*.2
+            let n_radians = (Math.PI*2)*(Math.random()-.5)*0.05;
+            console.log(n_trn_x_center)
+            let n_trn_x = n_trn_x_center+o_char_on_canvas.n_trn_x;
+            let n_trn_y = o_char_on_canvas.n_trn_y
+            let n_scl_x = o_char_on_canvas.n_scl_x*(1+n_factor)
+            let n_scl_y = o_char_on_canvas.n_scl_y*(1+n_factor)
+            // o_ctx.drawImage(
+            //     o_char_on_canvas.o_char_img.o_img, 
+            //     n_trn_x, 
+            //     n_trn_y, 
+            //     n_scl_x,
+            //     n_scl_y
+            // );
+            o_ctx.save();
+            o_ctx.translate(
+                n_trn_x+(n_scl_x/2),
+                n_trn_y+(n_scl_y/2)
+            );
+            o_ctx.rotate(n_radians);
+            o_ctx.drawImage(
+                o_char_on_canvas.o_char_img.o_img, 
+                -n_scl_x/2,
+                -n_scl_y/2,
+                n_scl_x,
+                n_scl_y
+            );
+            // o_ctx.translate(
+            //     -n_trn_x-(o_canvas.width*10),
+            //     -n_trn_y
+            // );
+            o_ctx.restore();
+        }
     }
     // console.log(a_o_line)
 
-    f_update_tab_favicon(a_o_char_on_canvas?.[0].o_char_img.o_img.src)
     // let n_scl_x_max = 
 
     // let n_trn_x = 0;
     // let n_scl_y_max = 0;
     // let n_trn_y = 0;
     // let a_o_img = 
+    s_text_last = o_state.s_text
 }
 
-let f_raf = function(){ 
-    // f_render_canvas();
-    n_id_raf = window.requestAnimationFrame(f_raf);
-
-}
-n_id_raf = window.requestAnimationFrame(f_raf);
 
 
 class O_char_img{
@@ -254,8 +284,18 @@ class O_char_on_canvas{
 
     }
 }
-
+let a_s_text_alignment_x_axis = [
+    'left', 
+    'center', 
+    'right'
+];
 let o_state = {
+    n_trn_x_max_char: 0,
+    a_a_o_char_on_canvas: [],
+    a_s_text_alignment_x_axis,
+    s_text_alignment_x_axis : a_s_text_alignment_x_axis[0],
+    n_fps: 10,
+    b_animate: false,
     s_text : [
         `look`, 
         `down`, 
@@ -267,6 +307,22 @@ let o_state = {
     a_o_char_img: []
 }
 window.o_state = o_state
+
+
+let n_wpn = 0;
+let n_wpn_absdiff_max =  1000 / o_state.n_fps;
+let f_raf = function(){ 
+    let n_wpn_absdiff = Math.abs(n_wpn - window.performance.now());
+    if(n_wpn_absdiff > n_wpn_absdiff_max){
+        if(o_state.b_animate){
+            f_render_canvas();
+        }
+        n_wpn = window.performance.now();
+    }
+    n_id_raf = window.requestAnimationFrame(f_raf);
+}
+n_id_raf = window.requestAnimationFrame(f_raf);
+
 let n = 0; 
 let o = await fetch("/a_s_name_file.json");
 let a_o = await o.json();
@@ -333,8 +389,89 @@ document.body.appendChild(
                     s_tag: "canvas"
                 },
                 {
-                    class: "inputs", 
+                    class: "inputs hoverable clickable", 
                     a_o: [
+                        {
+                            s_tag: "button", 
+                            innerText: "Download .png", 
+                            onpointerdown: ()=>{
+                                const o_el_link = document.createElement('a');
+                                o_el_link.href = o_canvas.toDataURL('image/png');
+                                o_el_link.download = `ransom_renderer_deno_dev_${o_state.s_text.split(" ").slice(0,12).join('_')}.png`;
+                                o_el_link.click();
+                            }
+                        },
+                        Object.assign(
+                            o_state, 
+                            {
+                                o_js__animate: {
+                                    f_o_jsh:()=>{
+                                        return {
+                                            style: [
+                                                "display:flex",
+                                                'align-items: center',
+                                                // 'justify-content: center',
+                                            ].join(';'),
+                                            a_o: [
+                                            
+                                                {
+                                                    innerText: "animate", 
+                                                },
+                                                {
+                                                    s_tag: "button", 
+                                                    innerText: (o_state.b_animate) ? '[x]' : '[]', 
+                                                    onpointerdown: async ()=>{
+                                                        o_state.b_animate = !o_state.b_animate
+                                                        await o_state?.o_js__animate?._f_render();
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        ).o_js__animate,
+                        Object.assign(
+                            o_state, 
+                            {
+                                o_js__s_text_alignment_x_axis: {
+                                    f_o_jsh:()=>{
+                                        return {
+                                            style: [
+                                                "display:flex",
+                                                'align-items: center',
+                                                // 'justify-content: center',
+                                            ].join(';'),
+                                            a_o: [
+                                            
+                                                {
+                                                    innerText: "s_text_alignment_x_axis", 
+                                                },
+                                                {
+                                                    s_tag: "select",
+                                                    a_o: [
+                                                        ...o_state.a_s_text_alignment_x_axis.map(s=>{
+                                                            return {
+                                                                s_tag: "option", 
+                                                                innerText: s,
+                                                                value: s, 
+                                                                ...((
+                                                                    o_state.s_text_alignment_x_axis == s
+                                                                ) ?{selected: true} :{}),
+                                                                onpointerdown: (o_e)=>{
+                                                                    o_state.s_text_alignment_x_axis = o_e.target.value
+                                                                    f_render_canvas();
+                                                                }
+                                                            }
+                                                        })
+                                                    ],
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        ).o_js__s_text_alignment_x_axis,
                         Object.assign(
                             o_state, 
                             {
