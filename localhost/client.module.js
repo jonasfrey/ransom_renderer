@@ -41,16 +41,21 @@ f_add_css(
     canvas{
         width: 100%;
         height: 100%;
-        position:fixed;
-        z-index:-1;
+        position:absolute;
+        top: 0;
+        left: 0;
     }
     .app{
+        width:100vw;
+        height:100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .inputs{
         max-width: 1000px;
-        width:100%;
-        height: 100vh;
-        display:flex;
-        flex-direction: column;
-        justify-content:flex-end;
+        align-self:end;
+        z-index:1;        
     }
     ${
         f_s_css_from_o_variables(
@@ -76,7 +81,6 @@ let  f_update_tab_favicon = function(s_url) {
 let o_canvas = document.createElement('canvas');
 o_canvas.width = window.innerWidth
 o_canvas.height = window.innerHeight
-document.body.appendChild(o_canvas);
 let o_ctx = o_canvas.getContext("2d");
 
 
@@ -324,26 +328,40 @@ document.body.appendChild(
             s_tag: 'div', 
             class: "app",
             a_o: [
-                Object.assign(
-                    o_state, 
-                    {
-                        o_js__s_text: {
-                            f_o_jsh: ()=>{
-                                return {
-                                    s_tag: "textarea", 
-                                    oninput: (o_e)=>{
-                                        o_state.s_text = o_e.target.value;
-                                        f_render_canvas();
-                                    }, 
-                                    value: o_state.s_text
+                {
+                    id: "canvas",
+                    s_tag: "canvas"
+                },
+                {
+                    class: "inputs", 
+                    a_o: [
+                        Object.assign(
+                            o_state, 
+                            {
+                                o_js__s_text: {
+                                    f_o_jsh: ()=>{
+                                        return {
+                                            s_tag: "textarea", 
+                                            rows: 10,
+                                            oninput: (o_e)=>{
+                                                o_state.s_text = o_e.target.value;
+                                                f_render_canvas();
+                                            }, 
+                                            value: o_state.s_text
+                                        }
+                                    }
                                 }
                             }
-                        }
-                    }
-                ).o_js__s_text,
+                        ).o_js__s_text,
+                    ]
+                }    
             ]
         }
     )
 );
+o_canvas = document.querySelector("#canvas");
+o_ctx = o_canvas.getContext("2d")
+f_resize();
+
 f_render_canvas();
 // //readme.md:end
