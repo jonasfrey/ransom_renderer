@@ -2,7 +2,7 @@
 import {
     f_websersocket_serve,
     f_v_before_return_response__fileserver
-} from "https://deno.land/x/websersocket@1.0.1/mod.js"
+} from "https://deno.land/x/websersocket@1.0.2/mod.js"
 
 import {
     O_ws_client
@@ -67,6 +67,7 @@ let f_handler = async function(o_request){
     }
     // normal http request handling here
     let o_url = new URL(o_request.url);
+
     if(o_url.pathname == '/a_s_name_file.json'){
         let a_o_entry = [];
         for await (let o of Deno.readDir("./localhost/static/")){
